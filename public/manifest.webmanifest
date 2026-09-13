@@ -1,7 +1,7 @@
 {
-  "name": "CHEMVERSE Virtual Chemistry Institute",
+  "name": "CHEMVERSE 2.0 Macro Lab Edition",
   "short_name": "CHEMVERSE",
-  "description": "ห้องปฏิบัติการเคมีเสมือน 3D สำหรับนักเรียนมัธยมศึกษา",
+  "description": "ห้องปฏิบัติการเคมีเสมือน 3D แบบหยิบ เท ผสม และสังเกตปฏิกิริยาระดับมหภาค",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#03101d",
