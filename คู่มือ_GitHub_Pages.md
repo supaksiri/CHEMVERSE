@@ -1,11 +1,11 @@
-# คู่มือนำ CHEMVERSE ขึ้น GitHub Pages
+# คู่มือนำ CHEMVERSE 3.0 ขึ้น GitHub Pages
 
 ## วิธีที่ 1: อัปโหลดผ่านหน้าเว็บ GitHub
 
 1. เข้าสู่ระบบ GitHub แล้วกด **New repository**
 2. ตั้งชื่อ เช่น `chemverse-virtual-lab`
 3. เลือก **Public** หรือ **Private** ตามต้องการ แล้วสร้าง Repository
-4. แตกไฟล์ ZIP และอัปโหลดไฟล์ภายในโฟลเดอร์ `chemverse` ทั้งหมด โดยต้องเห็น `package.json` อยู่ระดับบนสุด
+4. แตกไฟล์ ZIP และอัปโหลดไฟล์ภายในโฟลเดอร์ `chemverse-v3` ทั้งหมด โดยต้องเห็น `package.json` อยู่ระดับบนสุด
 5. Commit ไฟล์ไปที่ branch `main`
 6. เปิด **Settings → Pages**
 7. ในหัวข้อ **Build and deployment → Source** เลือก **GitHub Actions**
@@ -17,7 +17,7 @@
 ```bash
 git init
 git add .
-git commit -m "Launch CHEMVERSE 1.0"
+git commit -m "Launch CHEMVERSE 3.0 Scientific Fidelity Lab"
 git branch -M main
 git remote add origin https://github.com/USERNAME/chemverse-virtual-lab.git
 git push -u origin main

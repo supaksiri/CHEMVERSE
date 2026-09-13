@@ -1,0 +1,10 @@
+{
+  "name": "CHEMVERSE 3.0 Scientific Fidelity Lab",
+  "short_name": "CHEMVERSE 3",
+  "description": "ห้องปฏิบัติการเคมีเสมือนที่เชื่อมอุปกรณ์ กราฟ อนุภาค และสมการจากแบบจำลองเดียวกัน",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#03101d",
+  "theme_color": "#06162b",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
