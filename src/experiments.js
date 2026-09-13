@@ -7,7 +7,8 @@ export const experiments = [
     equipment:['ขาตั้งบิวเรต','บิวเรต 50.00 mL','ปิเปต 25.00 mL','ขวดรูปชมพู่','pH meter'],
     sample:{id:'hcl',volume:25,concentration:.1}, reagent:{id:'naoh',concentration:.1},
     graph:{x:'ปริมาตร NaOH (mL)',y:'pH',series:['pH']}, target:'หาจุดสมมูลและทำให้ pH อยู่ระหว่าง 6.8–7.2',
-    steps:['Rinse ปิเปตด้วย HCl','ตวง HCl 25.00 mL','Rinse และเติมบิวเรตด้วย NaOH','สอบเทียบ pH meter','ไทเทรตจนถึงจุดสมมูล']
+    steps:['Rinse ปิเปตด้วย HCl','ตวง HCl 25.00 mL ลงขวดรูปชมพู่','Rinse และเติมบิวเรตด้วย NaOH','สอบเทียบและจุ่ม pH probe','เปิด stopcock และหมุนขวดจนถึงจุดสมมูล'],
+    actions:[['rinsePipette','ล้างปิเปตด้วย HCl','ปิเปต'],['transferSample','ดูด–ปล่อย HCl 25.00 mL','ปิเปต'],['fillBurette','เติมและไล่ฟองอากาศในบิวเรต','บิวเรต'],['calibrateProbe','สอบเทียบ pH 4/7/10','pH meter'],['placeProbe','จุ่มหัววัดในสารละลาย','pH meter'],['flow','เปิด/ปิด stopcock','บิวเรต'],['swirl','หมุนขวดรูปชมพู่','ขวดรูปชมพู่']]
   },
   {
     id:'precipitation', icon:'❄️', short:'Precipitate', title:'Quantitative Precipitation',
@@ -17,7 +18,8 @@ export const experiments = [
     equipment:['ปิเปต 10.00 mL','บีกเกอร์ 100 mL','แท่งแก้วคน','กรวยกรอง','กระดาษกรอง','เครื่องชั่ง 0.01 g'],
     sample:{id:'agno3',volume:20,concentration:.1}, reagent:{id:'nacl',concentration:.1},
     graph:{x:'ปริมาตร NaCl (mL)',y:'จำนวนโมล (mmol)',series:['Ag⁺','Cl⁻','AgCl']}, target:'สร้าง กรอง และคำนวณมวลตะกอน AgCl',
-    steps:['ตวง AgNO₃','เติม NaCl ทีละส่วน','คนและรอให้ตะกอนตก','กรองและล้างตะกอน','ทำให้แห้งแล้วชั่ง']
+    steps:['ตวง AgNO₃','เติม NaCl ทีละส่วน','คนและรอให้ตะกอนตก','กรองและล้างตะกอน','ทำให้แห้งแล้วชั่ง'],
+    actions:[['transferSample','ตวง AgNO₃ ด้วยปิเปต','ปิเปต'],['dose','เติม NaCl ทีละส่วน','ปิเปต'],['swirl','คนและพักให้ตกตะกอน','แท่งแก้ว'],['filter','กรองและล้างตะกอน','กรวยกรอง'],['dry','ทำให้แห้ง','ตู้อบ'],['measure','ชั่งมวล','เครื่องชั่ง']]
   },
   {
     id:'gas', icon:'🫧', short:'Gas', title:'Gas Collection & Stoichiometry',
@@ -27,7 +29,8 @@ export const experiments = [
     equipment:['เครื่องชั่ง 0.01 g','ขวดรูปชมพู่มีจุก','ท่อนำแก๊ส','อ่างน้ำ','กระบอกเก็บแก๊ส','เทอร์มอมิเตอร์'],
     sample:{id:'zn',mass:.13}, reagent:{id:'hcl',concentration:1},
     graph:{x:'เวลา (s)',y:'ปริมาตร H₂ (mL)',series:['H₂']}, target:'เก็บ H₂ และเปรียบเทียบปริมาตรกับค่าจากสโตอิชิโอเมตรี',
-    steps:['ชั่ง Zn 0.13 g','ประกอบชุดเก็บแก๊ส','ตรวจระบบว่าไม่รั่ว','เติม HCl','บันทึกปริมาตรแก๊สทุกช่วงเวลา']
+    steps:['ชั่ง Zn 0.13 g','ประกอบชุดเก็บแก๊ส','ตรวจระบบว่าไม่รั่ว','เติม HCl','บันทึกปริมาตรแก๊สทุกช่วงเวลา'],
+    actions:[['transferSample','ชั่งและใส่ Zn','เครื่องชั่ง'],['assemble','ต่อจุกและท่อนำแก๊ส','ชุดเก็บแก๊ส'],['placeProbe','ตรวจรอยรั่ว','ข้อต่อ'],['dose','เติม HCl ผ่านกรวยหยด','กรวยหยด'],['run','เริ่ม/หยุดจับเวลา','นาฬิกา']]
   },
   {
     id:'kinetics', icon:'⏱️', short:'Kinetics', title:'Reaction Rate Research',
@@ -37,7 +40,8 @@ export const experiments = [
     equipment:['ขวดปฏิกิริยา','ปิเปต','จุกและท่อนำแก๊ส','Gas sensor','เทอร์มอมิเตอร์','นาฬิกาจับเวลา'],
     sample:{id:'h2o2',volume:20,concentration:1}, reagent:{id:'ki',concentration:.1},
     graph:{x:'เวลา (s)',y:'ความเข้มข้น / O₂',series:['H₂O₂','O₂']}, target:'เปรียบเทียบอัตราเมื่อเปลี่ยนอุณหภูมิและใช้ตัวเร่ง',
-    steps:['ตวง H₂O₂','ตั้งค่าอุณหภูมิ','ต่อ Gas sensor','เติม KI','เริ่มจับเวลาและเก็บข้อมูล']
+    steps:['ตวง H₂O₂','ตั้งค่าอุณหภูมิ','ต่อ Gas sensor','เติม KI','เริ่มจับเวลาและเก็บข้อมูล'],
+    actions:[['transferSample','ตวง H₂O₂','กระบอกตวง'],['temperature','ตั้งอ่างควบคุมอุณหภูมิ','อ่างน้ำ'],['connectSensor','ต่อ Gas sensor','Gas sensor'],['dose','เติม KI ด้วยปิเปต','ปิเปต'],['run','เริ่ม/หยุดเก็บข้อมูล','นาฬิกา']]
   },
   {
     id:'equilibrium', icon:'⚖️', short:'Equilibrium', title:'Equilibrium Control',
@@ -47,7 +51,8 @@ export const experiments = [
     equipment:['ปิเปต','หลอดทดลอง','คิวเวต','Colorimeter 447 nm','อ่างน้ำร้อน','อ่างน้ำแข็ง'],
     sample:{id:'fecl3',volume:10,concentration:.001}, reagent:{id:'kscn',concentration:.001},
     graph:{x:'เวลา / การรบกวน',y:'ความเข้มข้น (mM)',series:['Fe³⁺','SCN⁻','FeSCN²⁺']}, target:'รบกวนระบบและอธิบายทิศทางการเลื่อนสมดุลด้วย Q และ K',
-    steps:['ตวง Fe³⁺','เติม SCN⁻','ทำ Blank เครื่องวัดสี','วัด Absorbance','รบกวนและติดตามสมดุลใหม่']
+    steps:['ตวง Fe³⁺','เติม SCN⁻','ทำ Blank เครื่องวัดสี','วัด Absorbance','รบกวนและติดตามสมดุลใหม่'],
+    actions:[['transferSample','ตวง Fe³⁺ ลงหลอดทดลอง','ปิเปต'],['dose','เติม SCN⁻ ทีละหยด','หลอดหยด'],['blank','ทำ Blank ด้วยตัวทำละลาย','Colorimeter'],['measure','ใส่ cuvette และวัดค่า','Colorimeter'],['temperature','รบกวนด้วยอุณหภูมิ','อ่างน้ำ']]
   }
 ];
 

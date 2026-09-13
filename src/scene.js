@@ -7,7 +7,7 @@ const mixHex=(a,b,t)=>{
 
 export class LabScene {
   constructor(host){
-    this.host=host;this.quality='balanced';this.clock=new THREE.Clock();this.particles=[];this.pourJob=null;this.totalVolume=0;this.chemColors=[0x73dbff,0xe8ffff];
+    this.host=host;this.quality='balanced';this.clock=new THREE.Clock();this.particles=[];this.pourJob=null;this.totalVolume=0;this.chemColors=[0x73dbff,0xe8ffff];this.flowing=false;this.flowRate=0;
     this.scene=new THREE.Scene();this.scene.background=new THREE.Color(0x030c18);this.scene.fog=new THREE.FogExp2(0x041020,.03);
     this.camera=new THREE.PerspectiveCamera(40,host.clientWidth/host.clientHeight,.1,100);this.camera.position.set(0,3.8,9.6);this.camera.lookAt(0,.4,0);
     this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));this.renderer.setSize(host.clientWidth,host.clientHeight);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.appendChild(this.renderer.domElement);
@@ -41,7 +41,9 @@ export class LabScene {
   }
   buildScientificEquipment(){
     const metal=new THREE.MeshStandardMaterial({color:0x8ca5b3,metalness:.85,roughness:.2}),dark=new THREE.MeshStandardMaterial({color:0x172a36,metalness:.65,roughness:.3});
-    this.buretteRig=new THREE.Group();const stand=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,4.5,12),metal);stand.position.set(-1.8,1.1,-.7);this.buretteRig.add(stand);const tube=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,3.5,18),this.glass.clone());tube.position.set(-.75,1.65,0);this.buretteRig.add(tube);const tip=new THREE.Mesh(new THREE.CylinderGeometry(.018,.045,.7,10),this.glass.clone());tip.position.set(-.75,-.45,0);this.buretteRig.add(tip);const tap=new THREE.Mesh(new THREE.BoxGeometry(.45,.07,.07),dark);tap.position.set(-.75,-.15,0);this.buretteRig.add(tap);this.equipmentRig.add(this.buretteRig);
+    this.buretteRig=new THREE.Group();const stand=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,4.5,12),metal);stand.position.set(-1.8,1.1,-.7);this.buretteRig.add(stand);const tube=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,3.5,18),this.glass.clone());tube.position.set(-.75,1.65,0);this.buretteRig.add(tube);this.buretteLiquid=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,3.25,14),new THREE.MeshPhysicalMaterial({color:0xc8f7ff,transparent:true,opacity:.62}));this.buretteLiquid.position.set(-.75,1.72,0);this.buretteRig.add(this.buretteLiquid);for(let i=0;i<=10;i++){const mark=new THREE.Mesh(new THREE.BoxGeometry(i%5===0?.23:.13,.012,.012),new THREE.MeshBasicMaterial({color:0xbdefff}));mark.position.set(-.62,3.25-i*.31,.08);this.buretteRig.add(mark)}const tip=new THREE.Mesh(new THREE.CylinderGeometry(.018,.045,.7,10),this.glass.clone());tip.position.set(-.75,-.45,0);this.buretteRig.add(tip);const tap=new THREE.Mesh(new THREE.BoxGeometry(.45,.08,.09),dark);tap.position.set(-.75,-.15,0);tap.userData.action='flow';this.stopcock=tap;this.buretteRig.add(tap);this.equipmentRig.add(this.buretteRig);
+    this.pipetteRig=new THREE.Group();this.pipetteRig.position.set(2.1,.55,.25);const pipette=new THREE.Mesh(new THREE.CylinderGeometry(.028,.055,2.8,14),this.glass.clone());pipette.rotation.z=-.38;pipette.userData.action='transferSample';this.pipetteRig.add(pipette);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.17,18,14),new THREE.MeshStandardMaterial({color:0x2ea7c9,roughness:.45}));bulb.position.set(-.53,1.27,0);bulb.userData.action='rinsePipette';this.pipetteRig.add(bulb);this.equipmentRig.add(this.pipetteRig);
+    this.probeRig=new THREE.Group();this.probeRig.position.set(.72,.68,.15);const probe=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,2.5,12),new THREE.MeshStandardMaterial({color:0xd8edf2,metalness:.35,roughness:.28}));probe.rotation.z=-.12;probe.userData.action='placeProbe';this.probeRig.add(probe);const meter=new THREE.Mesh(new THREE.BoxGeometry(.72,.45,.23),dark);meter.position.set(.18,1.42,0);meter.userData.action='calibrateProbe';this.probeRig.add(meter);this.equipmentRig.add(this.probeRig);
     this.gasRig=new THREE.Group();const bath=new THREE.Mesh(new THREE.BoxGeometry(2.4,.75,1.5),new THREE.MeshPhysicalMaterial({color:0x42bdea,transparent:true,opacity:.35}));bath.position.set(2.1,-.35,-.2);this.gasRig.add(bath);const collector=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,2.2,30,1,true),this.glass.clone());collector.position.set(2.1,.9,-.2);this.gasRig.add(collector);const gasFill=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.1,24),new THREE.MeshPhysicalMaterial({color:0xc9f7ff,transparent:true,opacity:.23}));gasFill.position.set(2.1,0,-.2);this.gasRig.add(gasFill);this.gasFill=gasFill;this.equipmentRig.add(this.gasRig);
     this.filterRig=new THREE.Group();const cone=new THREE.Mesh(new THREE.ConeGeometry(.65,1.25,32,1,true),this.glass.clone());cone.rotation.x=Math.PI;cone.position.set(2.15,.85,-.15);this.filterRig.add(cone);const neck=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,.8,12),this.glass.clone());neck.position.set(2.15,-.15,-.15);this.filterRig.add(neck);this.equipmentRig.add(this.filterRig);
     this.cuvetteRig=new THREE.Group();const machine=new THREE.Mesh(new THREE.BoxGeometry(1.65,1.25,1.45),dark);machine.position.set(2.1,.05,-.1);this.cuvetteRig.add(machine);const slot=new THREE.Mesh(new THREE.BoxGeometry(.45,.75,.4),new THREE.MeshStandardMaterial({color:0x4c0b24,emissive:0x42001a,emissiveIntensity:.7}));slot.position.set(2.1,.72,-.1);this.cuvetteRig.add(slot);this.colorimeterSlot=slot;this.equipmentRig.add(this.cuvetteRig);
@@ -60,20 +62,38 @@ export class LabScene {
     const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
     this.renderer.domElement.addEventListener('pointerdown',e=>{
       const rect=this.renderer.domElement.getBoundingClientRect();pointer.x=(e.clientX-rect.left)/rect.width*2-1;pointer.y=-(e.clientY-rect.top)/rect.height*2+1;ray.setFromCamera(pointer,this.camera);
+      const actionHit=ray.intersectObjects(this.equipmentRig.children,true).find(x=>x.object.userData.action);if(actionHit){this.onApparatusAction?.(actionHit.object.userData.action);return}
       const hit=ray.intersectObjects(this.bottles,true)[0];if(!hit)return;const label=hit.object.userData.bottle;const index=label==='A'?0:1;this.bottles[index].scale.setScalar(1.07);this.onBottleSelect?.(index);setTimeout(()=>this.bottles[index].scale.setScalar(1),180);
     });
   }
   setExperiment(id){
     this.buretteRig.visible=id==='titration';this.gasRig.visible=id==='gas'||id==='kinetics';this.filterRig.visible=id==='precipitation';this.cuvetteRig.visible=id==='equilibrium';
-    this.bottles[0].visible=id!=='titration';this.stirrer.visible=id==='precipitation'||id==='equilibrium';
+    this.pipetteRig.visible=id==='titration';this.probeRig.visible=id==='titration';this.bottles[0].visible=id!=='titration';this.bottles[1].visible=id!=='titration';this.stirrer.visible=id==='precipitation'||id==='equilibrium';
   }
   updateScientificState(s){
     if(s.color)this.liquid.material.color.set(s.color);this.surface.material.color.copy(this.liquid.material.color);
     if(this.gasFill){const fill=Math.max(.08,Math.min(1.8,(s.gasVolume||0)/180));this.gasFill.scale.y=fill;this.gasFill.position.y=.05+fill*.45}
     if(this.colorimeterSlot&&s.color)this.colorimeterSlot.material.color.set(s.color);
+    if(this.buretteLiquid){const remain=Math.max(.02,1-(s.added||0)/50);this.buretteLiquid.scale.y=remain;this.buretteLiquid.position.y=.1+1.62*remain}
+    if(this.stopcock)this.stopcock.rotation.y=s.running?Math.PI/2:0;
   }
   setChemicals(a,b){this.chemColors=[a.color||0x7bdfff,b.color||0xe8ffff];this.bottles.forEach((g,i)=>g.userData.liquid.material.color.setHex(this.chemColors[i]));}
-  resetMacro(){this.pourJob=null;this.totalVolume=0;this.clearParticles();this.stream.visible=false;this.liquid.scale.y=.08;this.liquid.position.y=-.81;this.surface.position.y=-.76;this.liquid.material.color.setHex(0x5dccff);this.bottles.forEach(g=>{g.position.copy(g.userData.home);g.rotation.set(0,0,0);g.userData.liquid.scale.y=1;g.userData.liquid.position.y=-.08});}
+  resetMacro(){this.pourJob=null;this.flowing=false;this.flowRate=0;this.totalVolume=0;this.clearParticles();this.stream.visible=false;this.liquid.scale.y=.08;this.liquid.position.y=-.81;this.surface.position.y=-.76;this.liquid.material.color.setHex(0x5dccff);if(this.buretteLiquid){this.buretteLiquid.scale.y=1;this.buretteLiquid.position.y=1.72}this.bottles.forEach(g=>{g.position.copy(g.userData.home);g.rotation.set(0,0,0);g.userData.liquid.scale.y=1;g.userData.liquid.position.y=-.08});}
+  setContinuousFlow(active,rate=.45){this.flowing=active;this.flowRate=rate;this.stream.visible=active;this.stream.position.set(-.75,-.83,0);this.stream.scale.set(.28,.18+Math.min(rate,2)*.22,.28);this.stream.material.color.setHex(0xd8fbff)}
+  performAction(action,onDone){
+    const duration=action==='swirl'?1200:900,start=performance.now();
+    const pipetteHome=this.pipetteRig.position.clone(),probeHome=this.probeRig.position.clone();
+    const tick=()=>{const p=Math.min(1,(performance.now()-start)/duration),wave=Math.sin(p*Math.PI);
+      if(action==='rinsePipette')this.pipetteRig.rotation.z=Math.sin(p*Math.PI*5)*.18;
+      if(action==='transferSample'){this.pipetteRig.position.lerpVectors(pipetteHome,new THREE.Vector3(.15,1.2,.1),wave);this.pipetteRig.rotation.z=-wave*.6}
+      if(action==='fillBurette')this.buretteLiquid.material.opacity=.25+.55*p;
+      if(action==='calibrateProbe')this.probeRig.rotation.y=p*Math.PI*2;
+      if(action==='placeProbe')this.probeRig.position.lerpVectors(probeHome,new THREE.Vector3(.38,.24,.12),Math.min(1,p*1.3));
+      if(action==='swirl'){this.beaker.position.x=Math.sin(p*Math.PI*8)*.18;this.beaker.rotation.z=Math.sin(p*Math.PI*8)*.06;this.surface.rotation.z+=.15}
+      if(action==='filter')this.filterRig.rotation.y=Math.sin(p*Math.PI)*.45;
+      if(p<1)requestAnimationFrame(tick);else{if(action!=='placeProbe')this.probeRig.position.copy(probeHome);this.pipetteRig.position.copy(pipetteHome);this.pipetteRig.rotation.set(0,0,0);this.beaker.position.x=0;this.beaker.rotation.set(0,0,0);onDone?.()}}
+    tick();
+  }
   pourChemical(index,volume,onDone){
     if(this.pourJob)return false;const bottle=this.bottles[index];this.pourJob={index,volume:Number(volume),start:performance.now(),duration:2200,from:bottle.position.clone(),onDone};return true;
   }
@@ -106,5 +126,5 @@ export class LabScene {
   clearParticles(){this.particles=[];this.effectGroup.clear()}
   setQuality(q){this.quality=q;this.renderer.setPixelRatio(q==='low'?1:Math.min(devicePixelRatio,q==='cinematic'?2:1.5));this.resize()}
   heat(active=true){this.heatRing.material.opacity=active?.85:0}
-  animate(){requestAnimationFrame(()=>this.animate());const t=this.clock.getElapsedTime(),now=performance.now();this.updatePour(now);this.surface.position.y+=Math.sin(t*3)*.0007;this.group.rotation.y=Math.sin(t*.13)*.018;for(const p of this.particles){const d=p.userData;if(d.kind==='bubble'){p.position.y+=d.speed*.012;p.scale.setScalar(1+(p.position.y+.6)*.12);if(p.position.y>this.surface.position.y)p.position.y=-.58;}else if(d.kind==='swirl'){p.position.x=Math.cos(t*2+d.phase)*d.radius;p.position.z=Math.sin(t*2+d.phase)*d.radius;p.position.y=-.3+Math.sin(t*3+d.phase)*.2;}else{p.position.y-=d.speed*.005;if(p.position.y<-.7)p.position.y=-.7;if(d.kind==='metal')p.position.x*=.998;}}this.renderer.render(this.scene,this.camera)}
+  animate(){requestAnimationFrame(()=>this.animate());const t=this.clock.getElapsedTime(),now=performance.now();this.updatePour(now);if(this.flowing){this.stream.material.opacity=.35+.42*Math.abs(Math.sin(t*22));this.totalVolume+=this.flowRate/60;this.setLevel(25+this.totalVolume)}this.surface.position.y+=Math.sin(t*3)*.0007;this.group.rotation.y=Math.sin(t*.13)*.018;for(const p of this.particles){const d=p.userData;if(d.kind==='bubble'){p.position.y+=d.speed*.012;p.scale.setScalar(1+(p.position.y+.6)*.12);if(p.position.y>this.surface.position.y)p.position.y=-.58;}else if(d.kind==='swirl'){p.position.x=Math.cos(t*2+d.phase)*d.radius;p.position.z=Math.sin(t*2+d.phase)*d.radius;p.position.y=-.3+Math.sin(t*3+d.phase)*.2;}else{p.position.y-=d.speed*.005;if(p.position.y<-.7)p.position.y=-.7;if(d.kind==='metal')p.position.x*=.998;}}this.renderer.render(this.scene,this.camera)}
 }

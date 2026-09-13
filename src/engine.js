@@ -9,10 +9,40 @@ export class ScientificEngine {
   select(id){
     this.experiment=getExperiment(id);this.temperature=25;this.pressure=1;this.time=0;this.added=0;this.closed=false;
     this.calibrated=false;this.rinsed=false;this.blank=false;this.filtered=false;this.dried=false;this.history=[];this.warning='';
+    this.flowRate=0;this.running=false;this.sampleTransferred=false;this.buretteFilled=false;this.probePlaced=false;this.swirled=false;
+    this.apparatus={pipette:'dry',burette:'empty',stopcock:'closed',flask:'empty',probe:'uncalibrated',system:'disassembled',sensor:'offline'};
     this.state={pH:7,gasVolume:0,precipitateMass:0,absorbance:0,rate:0,progress:0,species:{}};
     this.calculate(true);return this.snapshot();
   }
   technique(action){this[action]=true;return this.snapshot()}
+  apparatusAction(action){
+    const id=this.experiment.id;
+    if(action==='rinsePipette'){this.rinsed=true;this.apparatus.pipette='rinsed'}
+    if(action==='transferSample'){this.sampleTransferred=true;this.apparatus.pipette='delivered';this.apparatus.flask='sample'}
+    if(action==='fillBurette'){this.buretteFilled=true;this.apparatus.burette='50.00 mL'}
+    if(action==='calibrateProbe'){this.calibrated=true;this.apparatus.probe='calibrated'}
+    if(action==='placeProbe'){this.probePlaced=true;this.apparatus.probe='measuring'}
+    if(action==='swirl'){this.swirled=true}
+    if(action==='filter'){this.filtered=true;this.apparatus.system='filtering'}
+    if(action==='dry'){this.dried=true;this.apparatus.system='dry'}
+    if(action==='blank'){this.blank=true;this.apparatus.sensor='blanked'}
+    if(action==='assemble'){this.apparatus.system='assembled'}
+    if(action==='connectSensor'){this.apparatus.sensor='online'}
+    this.calculate();return this.snapshot();
+  }
+  canFlow(){return this.experiment.id!=='titration'||(this.sampleTransferred&&this.buretteFilled&&this.calibrated&&this.probePlaced)}
+  startFlow(rate=.45){if(!this.canFlow())return false;this.flowRate=clamp(Number(rate),.02,4);this.running=true;this.apparatus.stopcock='open';return true}
+  stopFlow(){this.flowRate=0;this.running=false;this.apparatus.stopcock='closed';this.calculate();return this.snapshot()}
+  tick(dt){
+    dt=clamp(Number(dt)||0,0,.1);
+    if(this.running&&this.experiment.id==='titration'){
+      this.added=round(this.added+this.flowRate*dt,4);this.time=round(this.time+dt,3);this.calculate();
+      if(this.added>=50){this.added=50;this.stopFlow()}
+    }else if(this.running&&(this.experiment.id==='gas'||this.experiment.id==='kinetics')){
+      this.time=round(this.time+dt,3);this.calculate();
+    }
+    return this.snapshot();
+  }
   add(amount){this.added=round(this.added+Number(amount),3);this.time=round(this.time+.35,2);this.calculate();return this.snapshot()}
   setTemperature(v){this.temperature=clamp(Number(v),5,80);this.calculate();return this.snapshot()}
   advance(seconds=2){this.time+=Number(seconds);this.calculate();return this.snapshot()}
@@ -65,7 +95,7 @@ export class ScientificEngine {
     this.state.rate=0;
   }
   point(){return {x:this.experiment.id==='titration'||this.experiment.id==='precipitation'||this.experiment.id==='equilibrium'?this.added:this.time,...structuredClone(this.state)}}
-  pushHistory(){const p=this.point(),last=this.history.at(-1);if(!last||last.x!==p.x||JSON.stringify(last.species)!==JSON.stringify(p.species))this.history.push(p);if(this.history.length>180)this.history.shift()}
+  pushHistory(){const p=this.point(),last=this.history.at(-1);if(!last||Math.abs(last.x-p.x)>.045||JSON.stringify(last.species)!==JSON.stringify(p.species))this.history.push(p);if(this.history.length>420)this.history.shift()}
   observation(){
     const id=this.experiment.id,s=this.state;if(id==='titration')return this.added?`เติม NaOH ${this.added.toFixed(2)} mL ค่า pH = ${s.pH.toFixed(2)}`:'สารละลายกรดใส ไม่มีสี';
     if(id==='precipitation')return this.added?`เกิดตะกอน AgCl สีขาว ${s.precipitateMass.toFixed(3)} g (ค่าทฤษฎี)`:'สารละลาย AgNO₃ ใส ไม่มีสี';
@@ -73,7 +103,7 @@ export class ScientificEngine {
     if(id==='kinetics')return this.added?`เกิด O₂ อัตราขณะนี้ ${s.rate.toFixed(3)} mmol/s`:'H₂O₂ สลายตัวช้าเมื่อยังไม่มีตัวเร่ง';
     return this.added?`สารละลายแดงขึ้น Absorbance = ${s.absorbance.toFixed(3)}`:'สารละลาย Fe³⁺ สีเหลืองอ่อน';
   }
-  snapshot(){return {experiment:this.experiment,temperature:this.temperature,pressure:this.state.pressure||this.pressure,time:this.time,added:this.added,calibrated:this.calibrated,rinsed:this.rinsed,blank:this.blank,filtered:this.filtered,dried:this.dried,warning:this.warning,observation:this.observation(),history:this.history.map(x=>structuredClone(x)),...structuredClone(this.state)}}
+  snapshot(){return {experiment:this.experiment,temperature:this.temperature,pressure:this.state.pressure||this.pressure,time:this.time,added:this.added,calibrated:this.calibrated,rinsed:this.rinsed,blank:this.blank,filtered:this.filtered,dried:this.dried,sampleTransferred:this.sampleTransferred,buretteFilled:this.buretteFilled,probePlaced:this.probePlaced,swirled:this.swirled,running:this.running,flowRate:this.flowRate,apparatus:structuredClone(this.apparatus),warning:this.warning,observation:this.observation(),history:this.history.map(x=>structuredClone(x)),...structuredClone(this.state)}}
 }
 
 // Backward-compatible export for classroom extensions.

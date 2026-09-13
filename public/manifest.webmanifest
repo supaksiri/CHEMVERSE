@@ -1,7 +1,7 @@
 {
-  "name": "CHEMVERSE 3.0 Scientific Fidelity Lab",
-  "short_name": "CHEMVERSE 3",
-  "description": "ห้องปฏิบัติการเคมีเสมือนที่เชื่อมอุปกรณ์ กราฟ อนุภาค และสมการจากแบบจำลองเดียวกัน",
+  "name": "CHEMVERSE 4.0 Authentic Apparatus Lab",
+  "short_name": "CHEMVERSE 4",
+  "description": "ห้องปฏิบัติการเคมีเสมือนที่ใช้อุปกรณ์เฉพาะงานและแสดงกราฟกับอนุภาคแบบเรียลไทม์",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#03101d",
