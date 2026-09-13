@@ -36,7 +36,15 @@ export class LabScene {
     const hotplate=new THREE.Mesh(new THREE.BoxGeometry(2.9,.22,2.3),new THREE.MeshStandardMaterial({color:0x172736,metalness:.75,roughness:.25}));hotplate.position.set(0,-.69,0);this.group.add(hotplate);
     this.heatRing=new THREE.Mesh(new THREE.TorusGeometry(.95,.07,12,64),new THREE.MeshBasicMaterial({color:0xff582e,transparent:true,opacity:0}));this.heatRing.rotation.x=Math.PI/2;this.heatRing.position.set(0,-.55,0);this.group.add(this.heatRing);
     this.stream=new THREE.Mesh(new THREE.CylinderGeometry(.045,.075,2.4,16),new THREE.MeshPhysicalMaterial({color:0x64dfff,transparent:true,opacity:.8,roughness:.1}));this.stream.visible=false;this.group.add(this.stream);
+    this.equipmentRig=new THREE.Group();this.group.add(this.equipmentRig);this.buildScientificEquipment();
     this.labelCanvas=document.createElement('canvas');
+  }
+  buildScientificEquipment(){
+    const metal=new THREE.MeshStandardMaterial({color:0x8ca5b3,metalness:.85,roughness:.2}),dark=new THREE.MeshStandardMaterial({color:0x172a36,metalness:.65,roughness:.3});
+    this.buretteRig=new THREE.Group();const stand=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,4.5,12),metal);stand.position.set(-1.8,1.1,-.7);this.buretteRig.add(stand);const tube=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,3.5,18),this.glass.clone());tube.position.set(-.75,1.65,0);this.buretteRig.add(tube);const tip=new THREE.Mesh(new THREE.CylinderGeometry(.018,.045,.7,10),this.glass.clone());tip.position.set(-.75,-.45,0);this.buretteRig.add(tip);const tap=new THREE.Mesh(new THREE.BoxGeometry(.45,.07,.07),dark);tap.position.set(-.75,-.15,0);this.buretteRig.add(tap);this.equipmentRig.add(this.buretteRig);
+    this.gasRig=new THREE.Group();const bath=new THREE.Mesh(new THREE.BoxGeometry(2.4,.75,1.5),new THREE.MeshPhysicalMaterial({color:0x42bdea,transparent:true,opacity:.35}));bath.position.set(2.1,-.35,-.2);this.gasRig.add(bath);const collector=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,2.2,30,1,true),this.glass.clone());collector.position.set(2.1,.9,-.2);this.gasRig.add(collector);const gasFill=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.1,24),new THREE.MeshPhysicalMaterial({color:0xc9f7ff,transparent:true,opacity:.23}));gasFill.position.set(2.1,0,-.2);this.gasRig.add(gasFill);this.gasFill=gasFill;this.equipmentRig.add(this.gasRig);
+    this.filterRig=new THREE.Group();const cone=new THREE.Mesh(new THREE.ConeGeometry(.65,1.25,32,1,true),this.glass.clone());cone.rotation.x=Math.PI;cone.position.set(2.15,.85,-.15);this.filterRig.add(cone);const neck=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,.8,12),this.glass.clone());neck.position.set(2.15,-.15,-.15);this.filterRig.add(neck);this.equipmentRig.add(this.filterRig);
+    this.cuvetteRig=new THREE.Group();const machine=new THREE.Mesh(new THREE.BoxGeometry(1.65,1.25,1.45),dark);machine.position.set(2.1,.05,-.1);this.cuvetteRig.add(machine);const slot=new THREE.Mesh(new THREE.BoxGeometry(.45,.75,.4),new THREE.MeshStandardMaterial({color:0x4c0b24,emissive:0x42001a,emissiveIntensity:.7}));slot.position.set(2.1,.72,-.1);this.cuvetteRig.add(slot);this.colorimeterSlot=slot;this.equipmentRig.add(this.cuvetteRig);
   }
   makeBottle(x,color,label){
     const g=new THREE.Group();g.position.set(x,.05,.15);g.userData.home=g.position.clone();g.userData.label=label;
@@ -55,10 +63,23 @@ export class LabScene {
       const hit=ray.intersectObjects(this.bottles,true)[0];if(!hit)return;const label=hit.object.userData.bottle;const index=label==='A'?0:1;this.bottles[index].scale.setScalar(1.07);this.onBottleSelect?.(index);setTimeout(()=>this.bottles[index].scale.setScalar(1),180);
     });
   }
+  setExperiment(id){
+    this.buretteRig.visible=id==='titration';this.gasRig.visible=id==='gas'||id==='kinetics';this.filterRig.visible=id==='precipitation';this.cuvetteRig.visible=id==='equilibrium';
+    this.bottles[0].visible=id!=='titration';this.stirrer.visible=id==='precipitation'||id==='equilibrium';
+  }
+  updateScientificState(s){
+    if(s.color)this.liquid.material.color.set(s.color);this.surface.material.color.copy(this.liquid.material.color);
+    if(this.gasFill){const fill=Math.max(.08,Math.min(1.8,(s.gasVolume||0)/180));this.gasFill.scale.y=fill;this.gasFill.position.y=.05+fill*.45}
+    if(this.colorimeterSlot&&s.color)this.colorimeterSlot.material.color.set(s.color);
+  }
   setChemicals(a,b){this.chemColors=[a.color||0x7bdfff,b.color||0xe8ffff];this.bottles.forEach((g,i)=>g.userData.liquid.material.color.setHex(this.chemColors[i]));}
   resetMacro(){this.pourJob=null;this.totalVolume=0;this.clearParticles();this.stream.visible=false;this.liquid.scale.y=.08;this.liquid.position.y=-.81;this.surface.position.y=-.76;this.liquid.material.color.setHex(0x5dccff);this.bottles.forEach(g=>{g.position.copy(g.userData.home);g.rotation.set(0,0,0);g.userData.liquid.scale.y=1;g.userData.liquid.position.y=-.08});}
   pourChemical(index,volume,onDone){
     if(this.pourJob)return false;const bottle=this.bottles[index];this.pourJob={index,volume:Number(volume),start:performance.now(),duration:2200,from:bottle.position.clone(),onDone};return true;
+  }
+  dispense(volume,onDone){
+    if(this.pourJob)return false;this.stream.visible=true;this.stream.position.set(-.75,.15,0);this.stream.scale.set(.45,.62,.45);const start=performance.now(),initial=this.totalVolume;
+    const tick=()=>{const p=Math.min(1,(performance.now()-start)/900);this.setLevel(initial+Number(volume)*p);this.stream.material.opacity=.35+.45*Math.abs(Math.sin(p*Math.PI*8));if(p<1)requestAnimationFrame(tick);else{this.totalVolume+=Number(volume);this.stream.visible=false;this.stream.scale.set(1,1,1);this.stream.material.opacity=.8;onDone?.()}};tick();return true;
   }
   updatePour(now){
     const j=this.pourJob;if(!j)return;const p=Math.min(1,(now-j.start)/j.duration),b=this.bottles[j.index],dir=j.index===0?-1:1;
